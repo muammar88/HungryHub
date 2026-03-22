@@ -1,34 +1,74 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Put, Param, Delete, Body } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { MenuItemsService } from './menu_items.service';
-import { CreateMenuItemDto } from './dto/create-menu_item.dto';
-import { UpdateMenuItemDto } from './dto/update-menu_item.dto';
+import { UpdateMenuDto } from './dto/update-menu.dto';
 
-@Controller('menu-items')
+@ApiTags('menu_items')
+@Controller('menu_items')
 export class MenuItemsController {
   constructor(private readonly menuItemsService: MenuItemsService) {}
 
-  @Post()
-  create(@Body() createMenuItemDto: CreateMenuItemDto) {
-    return this.menuItemsService.create(createMenuItemDto);
-  }
+  @Put(':id')
+  @ApiOperation({ summary: 'Update menu berdasarkan ID' })
+  @ApiParam({ name: 'id', description: 'ID menu', type: Number })
+  @ApiBody({
+    description: 'Data untuk update menu',
+    schema: {
+      example: {
+        name: 'Nasi Goreng Spesial',
+        description: 'Nasi goreng dengan telur dan ayam',
+        price: 25000,
+        category: 'Makanan',
+        is_available: true,
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Menu berhasil diupdate',
+    schema: {
+      example: {
+        message: 'Success',
+        data: {
+          id: 1,
+          name: 'Nasi Goreng Spesial',
+          description: 'Nasi goreng dengan telur dan ayam',
+          price: 25000,
+          category: 'Makanan',
+          is_available: true,
+          restaurantId: 2,
+          updatedAt: '2026-03-22T10:00:00.000Z',
+        },
+      },
+    },
+  })
+  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
+    const menus = await this.menuItemsService.update(+id, updateMenuDto);
 
-  @Get()
-  findAll() {
-    return this.menuItemsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.menuItemsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMenuItemDto: UpdateMenuItemDto) {
-    return this.menuItemsService.update(+id, updateMenuItemDto);
+    return {
+      message: 'Success',
+      data: menus,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.menuItemsService.remove(+id);
+  @ApiOperation({ summary: 'Hapus menu berdasarkan ID' })
+  @ApiParam({ name: 'id', description: 'ID menu', type: Number })
+  @ApiOkResponse({
+    description: 'Menu berhasil dihapus',
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Menu berhasil dihapus',
+      },
+    },
+  })
+  async remove(@Param('id') id: string) {
+    return await this.menuItemsService.remove(+id);
   }
 }

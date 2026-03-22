@@ -1,0 +1,139 @@
+export default async function restaurantsSeed(prisma, esService) {
+  await prisma.menuItem.deleteMany();
+
+  await prisma.restaurant.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Resto Nusantara',
+      address: 'Jl. Sudirman No. 1',
+      phone: '08123456789',
+      opening_hours: '08:00 - 22:00',
+      menuItems: {
+        create: [
+          {
+            name: 'Nasi Goreng Spesial',
+            description: 'Nasi goreng dengan telur dan ayam',
+            price: 22000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Mie Goreng Jawa',
+            description: 'Mie goreng khas Jawa',
+            price: 20000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Ayam Bakar',
+            description: 'Ayam bakar bumbu kecap',
+            price: 30000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Es Teh Manis',
+            description: 'Teh manis dingin',
+            price: 5000,
+            category: 'Minuman',
+          },
+          {
+            name: 'Es Jeruk',
+            description: 'Jeruk segar',
+            price: 8000,
+            category: 'Minuman',
+          },
+          {
+            name: 'Kentang Goreng',
+            description: 'Kentang crispy',
+            price: 15000,
+            category: 'Snack',
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      name: 'Warung Sederhana',
+      address: 'Jl. Merdeka No. 10',
+      phone: '08234567890',
+      opening_hours: '09:00 - 21:00',
+      menuItems: {
+        create: [
+          {
+            name: 'Ayam Penyet',
+            description: 'Ayam goreng dengan sambal',
+            price: 25000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Lele Goreng',
+            description: 'Lele crispy',
+            price: 20000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Nasi Uduk',
+            description: 'Nasi uduk gurih',
+            price: 15000,
+            category: 'Makanan',
+          },
+          {
+            name: 'Jus Jeruk',
+            description: 'Jus jeruk segar',
+            price: 10000,
+            category: 'Minuman',
+          },
+          {
+            name: 'Teh Hangat',
+            description: 'Teh panas',
+            price: 4000,
+            category: 'Minuman',
+          },
+          {
+            name: 'Tahu Goreng',
+            description: 'Tahu crispy',
+            price: 8000,
+            category: 'Snack',
+          },
+        ],
+      },
+    },
+  });
+
+  // Get data
+  const restaurants = await prisma.restaurant.findMany({
+    include: {
+      menuItems: true,
+    },
+  });
+
+  // delete restaurant
+  try {
+    await esService.deleteByQuery('restaurants', { query: { match_all: {} } });
+  } catch (err) {
+    if (!/index_not_found_exception/.test(err?.meta?.body?.error?.type || '')) {
+      throw err;
+    }
+  }
+
+  // Sending to Elasticsearch
+  for (const r of restaurants) {
+    await esService.index('restaurants', r.id.toString(), {
+      id: r.id,
+      name: r.name,
+      address: r.address,
+      phone: r.phone,
+      opening_hours: r.opening_hours,
+      menus: r.menuItems.map((m) => ({
+        name: m.name,
+        category: m.category,
+        price: Number(m.price),
+      })),
+    });
+  }
+
+  console.log('✅ Seed + Elasticsearch selesai');
+}
