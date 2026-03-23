@@ -180,6 +180,9 @@ ELASTIC_USERNAME=elastic
 ELASTIC_PASSWORD=your_password
 
 JWT_SECRET=your_secret_key
+JWT_EXPIRES=expired_time
+JWT_REFRESH_SECRET=your_refresh_secret_key
+JWT_REFRESH_EXPIRES=expired_refresh_time
 ```
 
 ---
