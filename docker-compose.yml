@@ -49,13 +49,13 @@ services:
         condition: service_started
     environment:
       DATABASE_URL: mysql://user:password@mysql:3306/hungryhub
-      # DATABASE_URL="mysql://root:@localhost:3306/hungryhub_db"
       ELASTIC_NODE: http://elasticsearch:9200
       ELASTIC_USERNAME: elastic
       ELASTIC_PASSWORD: 3ekiDFkbQ8ATn0E50v7Y
-      # ELASTICSEARCH_NODE: http://elasticsearch:9200
-      # ELASTIC_USERNAME: elastic
-      # ELASTIC_PASSWORD: 3ekiDFkbQ8ATn0E50v7Y
+      JWT_SECRET: localenv
+      JWT_EXPIRES: 60
+      JWT_REFRESH_SECRET: refresh_secret_key
+      JWT_REFRESH_EXPIRES: 7d
     volumes:
       - .:/app
     command: npm run start:dev

@@ -5,7 +5,9 @@ import {
   Body,
   Param,
   Put,
+  Query,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,16 +15,23 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiBody,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuDto } from '../menu_items/dto/create-menu.dto';
+import { FindAllRestaurantsDto } from './dto/find-all-restaurants.dto';
+import { FindMenuQueryDto } from './dto/find-menu-query.dto';
+
+import { FindMenuResponse } from './restaurants.service';
 
 @ApiTags('restaurants')
 @Controller('restaurants')
+@UseGuards(JwtAuthGuard)
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
@@ -69,16 +78,31 @@ export class RestaurantsController {
       data: restaurant,
     };
   }
-
   @Get()
   @ApiOperation({ summary: 'Ambil semua restaurant' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Keyword pencarian nama restaurant (opsional)',
+    example: 'nusantara',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: true,
+    description: 'Halaman (default: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: true,
+    description: 'Jumlah data per halaman (default: 10)',
+    example: 10,
+  })
   @ApiOkResponse({
-    description: 'Daftar semua restaurant.',
+    description: 'Daftar semua restaurant',
     schema: {
       example: {
-        statusCode: 200,
-        message: 'Success',
-        error: null,
+        total: 1,
         data: [
           {
             id: 1,
@@ -87,7 +111,7 @@ export class RestaurantsController {
             menus: [
               {
                 name: 'Nasi Goreng Spesial',
-                category: 'Makanan',
+                category: 'main',
                 price: 22000,
               },
             ],
@@ -96,8 +120,12 @@ export class RestaurantsController {
       },
     },
   })
-  findAll() {
-    return this.restaurantsService.findAll();
+  findAll(@Query() query: FindAllRestaurantsDto) {
+    return this.restaurantsService.findAll(
+      query.search,
+      +query.page,
+      +query.limit,
+    );
   }
 
   @Get(':id')
@@ -245,58 +273,68 @@ export class RestaurantsController {
 
   @Get(':id/menu_items')
   @ApiOperation({ summary: 'Ambil semua menu berdasarkan ID restaurant' })
-  @ApiParam({ name: 'id', description: 'ID restaurant', type: Number })
+  @ApiParam({
+    name: 'id',
+    description: 'ID restaurant',
+    type: Number,
+  })
+
+  // ✅ CATEGORY dengan enum
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    enum: ['appetizer', 'main', 'dessert', 'drink'],
+    description: 'Filter kategori menu',
+    example: 'main',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'nasi',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: true,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: true,
+    example: 10,
+  })
   @ApiOkResponse({
     description: 'Daftar menu berhasil diambil',
     schema: {
       example: {
-        statusCode: 200,
-        message: 'Success',
-        error: null,
-        data: {
-          restaurantId: 2,
-          menus: [
-            {
-              name: 'Ayam Penyet',
-              category: 'Makanan',
-              price: 25000,
-              is_available: true,
-            },
-            {
-              name: 'Lele Goreng',
-              category: 'Makanan',
-              price: 20000,
-              is_available: true,
-            },
-            {
-              name: 'Nasi Uduk',
-              category: 'Makanan',
-              price: 15000,
-              is_available: true,
-            },
-            {
-              name: 'Jus Jeruk',
-              category: 'Minuman',
-              price: 10000,
-              is_available: true,
-            },
-          ],
-        },
+        total: 2,
+        data: [
+          {
+            name: 'Nasi Goreng',
+            category: 'main',
+            price: 20000,
+          },
+        ],
       },
     },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Category tidak valid',
   })
   @ApiResponse({
     status: 404,
     description: 'Restaurant tidak ditemukan',
   })
-  async findMenu(@Param('id') id: string) {
-    const menu = await this.restaurantsService.findMenu(+id);
-
-    return {
-      statusCode: 200,
-      message: 'Success',
-      error: null,
-      data: menu,
-    };
+  async findMenu(
+    @Param('id') id: string,
+    @Query() query: FindMenuQueryDto,
+  ): Promise<FindMenuResponse> {
+    return this.restaurantsService.findMenu(
+      +id,
+      query.category,
+      query.search,
+      +query.page,
+      +query.limit,
+    );
   }
 }

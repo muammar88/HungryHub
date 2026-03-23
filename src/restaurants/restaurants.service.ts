@@ -3,12 +3,24 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CreateMenuDto } from '../menu_items/dto/create-menu.dto';
+
+interface MenuItem {
+  name: string;
+  category?: string;
+  price?: number;
+}
+
+export interface FindMenuResponse {
+  total: number;
+  data: MenuItem[];
+}
 
 @Injectable()
 export class RestaurantsService {
@@ -70,13 +82,31 @@ export class RestaurantsService {
     }
   }
 
-  async findAll() {
+  async findAll(
+    search?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{ data: any[]; total: number }> {
     try {
+      const from = (page - 1) * limit;
+
+      const query = search
+        ? {
+            multi_match: {
+              query: search,
+              fields: ['name', 'address', 'menus.name', 'menus.category'],
+              fuzziness: 'AUTO',
+            },
+          }
+        : {
+            match_all: {},
+          };
+
       const result = await this.elasticsearchService.search({
         index: 'restaurants',
-        query: {
-          match_all: {},
-        },
+        from,
+        size: limit,
+        query,
       });
 
       const total =
@@ -203,14 +233,20 @@ export class RestaurantsService {
     }
   }
 
-  async findMenu(restaurantId: number) {
+  async findMenu(
+    restaurantId: number,
+    category?: string,
+    search?: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<FindMenuResponse> {
     try {
       const result = await this.elasticsearchService.get({
         index: 'restaurants',
         id: restaurantId.toString(),
       });
 
-      const source = result._source as any;
+      const source = result._source as { menus: MenuItem[] };
 
       if (!source) {
         throw new NotFoundException(
@@ -218,9 +254,44 @@ export class RestaurantsService {
         );
       }
 
+      let menus: MenuItem[] = source.menus ?? [];
+
+      const allowedCategories = ['appetizer', 'main', 'dessert', 'drink'];
+
+      if (category) {
+        const cat = category.trim().toLowerCase();
+
+        if (!allowedCategories.includes(cat)) {
+          throw new BadRequestException(
+            `Category tidak valid. Gunakan: ${allowedCategories.join(', ')}`,
+          );
+        }
+
+        menus = menus.filter((menu) => menu.category?.toLowerCase() === cat);
+      }
+
+      // 🔍 FILTER SEARCH
+      if (search) {
+        const keyword = search.trim().toLowerCase();
+        menus = menus.filter((menu) =>
+          menu.name.toLowerCase().includes(keyword),
+        );
+      }
+
+      // 📄 VALIDASI PAGINATION
+      page = page < 1 ? 1 : page;
+      limit = limit < 1 ? 10 : limit;
+
+      // 📄 PAGINATION
+      const total = menus.length;
+      const start = (page - 1) * limit;
+      const end = start + limit;
+
+      const data = menus.slice(start, end);
+
       return {
-        restaurantId,
-        menus: source.menus ?? [],
+        total,
+        data,
       };
     } catch (error) {
       if (error?.meta?.statusCode === 404) {
@@ -229,8 +300,12 @@ export class RestaurantsService {
         );
       }
 
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
-        'Gagal mengambil data menu dari Elasticsearch',
+        'Gagal mengambil data dari Elasticsearch',
       );
     }
   }

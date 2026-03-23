@@ -2,189 +2,233 @@
 
 ## 📌 Overview
 
-Repository ini berisi implementasi REST API untuk sistem **Restaurant Menu Management**, yang dikembangkan sebagai bagian dari **technical assessment Backend Software Engineer di HungryHub**.
+Repository ini berisi implementasi REST API untuk sistem Restaurant Menu Management, dikembangkan sebagai bagian dari technical assessment Backend Software Engineer di HungryHub.
 
-Aplikasi ini memungkinkan pengelolaan data restoran dan menu, serta mendukung **pencarian data menggunakan Elasticsearch**.
+Aplikasi ini mendukung:
+
+- Manajemen autentikasi (JWT)
+- CRUD Restaurant & Menu
+- Pencarian data menggunakan Elasticsearch
 
 ---
 
 ## 🔗 Repository
 
-👉 https://github.com/muammar88/HungryHub.git
+https://github.com/muammar88/HungryHub.git
 
 ---
 
 ## 🎯 Objectives
 
-Project ini dibuat untuk:
-
-- Mengimplementasikan RESTful API
-- Mendesain relasi database yang efisien
-- Mengintegrasikan **MySQL + Elasticsearch**
-- Menerapkan validasi dan error handling
-- Membangun backend yang scalable dan maintainable
+- Implementasi RESTful API
+- Desain database relational yang efisien
+- Integrasi MySQL + Elasticsearch
+- Authentication menggunakan JWT (access & refresh token)
+- Validasi dan error handling
+- Struktur backend scalable
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: NestJS
-- **Language**: TypeScript
-- **Database**: MySQL
-- **Search Engine**: Elasticsearch
-- **ORM**: Prisma
-- **Validation**: class-validator
-- **API Documentation**: Swagger
-- **Containerization**: Docker
+- Framework: NestJS
+- Language: TypeScript
+- Database: MySQL
+- Search Engine: Elasticsearch
+- ORM: Prisma
+- Auth: JWT
+- Validation: class-validator
+- Documentation: Swagger
+- Containerization: Docker
 
 ---
 
-## 🧱 Data Models
+## 🔐 Authentication
 
-### 🏪 Restaurant
+API menggunakan JWT Authentication.
 
-- `id` (number)
-- `name` (string, required)
-- `address` (string, required)
-- `phone` (string)
-- `opening_hours` (string)
+Flow:
 
----
-
-### 🍽️ Menu Item
-
-- `id` (number)
-- `name` (string, required)
-- `description` (string)
-- `price` (number, required)
-- `category` (string)
-- `restaurant_id` (relation)
+1. Login → dapat access_token & refresh_token
+2. Gunakan access_token untuk akses endpoint protected
+3. Gunakan refresh_token untuk mendapatkan token baru
 
 ---
 
 ## 📬 API Endpoints
 
-### 🏪 Restaurant
+## 🔐 Auth
 
-| Method | Endpoint         | Description             |
-| ------ | ---------------- | ----------------------- |
-| POST   | /restaurants     | Create restaurant       |
-| GET    | /restaurants     | Get all restaurants     |
-| GET    | /restaurants/:id | Get detail + menu items |
-| PUT    | /restaurants/:id | Update restaurant       |
-| DELETE | /restaurants/:id | Delete restaurant       |
+| Method | Endpoint      | Description   |
+| ------ | ------------- | ------------- |
+| POST   | /auth/login   | Login user    |
+| POST   | /auth/refresh | Refresh token |
+
+### Request Login
+
+```json
+{
+  "username": "admin",
+  "password": "admin"
+}
+```
+
+### Request Refresh
+
+```json
+{
+  "refresh_token": "your_refresh_token"
+}
+```
 
 ---
 
-### 🍽️ Menu Item
+## 🏪 Restaurant (Protected)
 
-| Method | Endpoint                    | Description                      |
-| ------ | --------------------------- | -------------------------------- |
-| POST   | /restaurants/:id/menu_items | Create menu item                 |
-| GET    | /restaurants/:id/menu_items | Get menu items (filter category) |
-| PUT    | /menu_items/:id             | Update menu item                 |
-| DELETE | /menu_items/:id             | Delete menu item                 |
+Header wajib:
+
+```
+Authorization: Bearer <access_token>
+```
+
+| Method | Endpoint                    | Description           |
+| ------ | --------------------------- | --------------------- |
+| POST   | /restaurants                | Create restaurant     |
+| GET    | /restaurants                | Get all restaurants   |
+| GET    | /restaurants/:id            | Get detail restaurant |
+| PUT    | /restaurants/:id            | Update restaurant     |
+| DELETE | /restaurants/:id            | Delete restaurant     |
+| POST   | /restaurants/:id/menu_items | Add menu              |
+| GET    | /restaurants/:id/menu_items | Get menu list         |
+
+---
+
+## 🍽️ Menu Items
+
+| Method | Endpoint        | Description |
+| ------ | --------------- | ----------- |
+| PUT    | /menu_items/:id | Update menu |
+| DELETE | /menu_items/:id | Delete menu |
+
+---
+
+## 🔍 Query Parameters (Menu List)
+
+Endpoint:
+
+```
+GET /restaurants/:id/menu_items
+```
+
+| Query    | Type   | Description                     |
+| -------- | ------ | ------------------------------- |
+| search   | string | Pencarian                       |
+| category | string | appetizer, main, dessert, drink |
+| page     | number | Halaman                         |
+| limit    | number | Limit data                      |
+
+---
+
+## 🧱 Data Models
+
+### Restaurant
+
+- id
+- name
+- address
+- phone
+- opening_hours
+
+### Menu Item
+
+- id
+- name
+- description
+- price
+- category
+- is_available
+- restaurant_id
 
 ---
 
 ## ⚙️ Installation
 
-### 1. Clone Repository
+### Clone
 
-```bash
+```
 git clone https://github.com/muammar88/HungryHub.git
 cd HungryHub
 ```
 
----
+### Install
 
-### 2. Install Dependencies
-
-```bash
+```
 npm install
 ```
 
 ---
 
-### 3. Setup Environment
+## ⚙️ Environment
 
 Buat file `.env`:
 
-```env
+```
 DATABASE_URL="mysql://root:@localhost:3306/hungryhub_db"
 
 ELASTIC_NODE=http://localhost:9200
 ELASTIC_USERNAME=elastic
-ELASTIC_PASSWORD=3ekiDFkbQ8ATn0E50v7Y
+ELASTIC_PASSWORD=your_password
+
+JWT_SECRET=your_secret_key
 ```
 
 ---
 
-## 🐬 Setup MySQL
+## 🐬 MySQL
 
-1. Pastikan MySQL sudah berjalan
-2. Buat database:
-
-```sql
+```
 CREATE DATABASE hungryhub_db;
 ```
 
 ---
 
-## 🔍 Setup Elasticsearch
+## 🔍 Elasticsearch
 
-### 🔧 Menggunakan Docker (REKOMENDASI)
-
-```bash
+```
 docker run -d \
   --name elasticsearch \
   -p 9200:9200 \
   -e "discovery.type=single-node" \
   -e "xpack.security.enabled=true" \
-  -e "ELASTIC_PASSWORD=3ekiDFkbQ8ATn0E50v7Y" \
+  -e "ELASTIC_PASSWORD=your_password" \
   docker.elastic.co/elasticsearch/elasticsearch:8.13.0
 ```
 
 ---
 
-### 🔎 Test Elasticsearch
+## 🗄️ Migration
 
-```bash
-curl -u elastic:3ekiDFkbQ8ATn0E50v7Y http://localhost:9200
 ```
-
-Jika berhasil, akan muncul response JSON.
-
----
-
-## 🗄️ Database Migration
-
-```bash
 npx prisma migrate dev
 ```
 
 ---
 
-## 🌱 Seed Data
+## 🌱 Seed
 
-```bash
+```
 npx prisma db seed
 ```
 
-Seed akan:
-
-- Menyimpan data ke MySQL
-- Mengirim data ke Elasticsearch
-
 ---
 
-## ▶️ Run Application
+## ▶️ Run App
 
-```bash
+```
 npm run start:dev
 ```
 
-Aplikasi berjalan di:
+URL:
 
 ```
 http://localhost:3000
@@ -192,9 +236,7 @@ http://localhost:3000
 
 ---
 
-## 📬 API Documentation
-
-Swagger tersedia di:
+## 📘 Swagger
 
 ```
 http://localhost:3000/documentation
@@ -202,19 +244,17 @@ http://localhost:3000/documentation
 
 ---
 
-## 🔎 Elasticsearch Integration
-
-Contoh data yang dikirim ke Elasticsearch:
+## 🔎 Elasticsearch Data
 
 ```json
 {
   "id": 1,
   "name": "Resto Nusantara",
+  "address": "Jl. Sudirman",
   "menus": [
     {
-      "id": 1,
       "name": "Nasi Goreng",
-      "category": "Makanan",
+      "category": "main",
       "price": 22000
     }
   ]
@@ -223,27 +263,29 @@ Contoh data yang dikirim ke Elasticsearch:
 
 ---
 
-## ✅ Features
+## ⚠️ Notes
 
-- CRUD Restaurant
-- CRUD Menu Item
-- Relasi Restaurant ↔ Menu Item
-- Filter menu berdasarkan kategori
-- Integrasi Elasticsearch
-- Validasi DTO
-- Error handling standar
-- Seed otomatis ke DB & Elasticsearch
+- Semua endpoint restaurant & menu membutuhkan JWT
+- Gunakan access_token di header Authorization
+- Gunakan refresh_token untuk mendapatkan token baru
 
 ---
 
-## ⚠️ Notes
+## ✅ Features
 
-- Pastikan Elasticsearch dan MySQL sudah berjalan sebelum seed
-- Gunakan Elasticsearch versi 8.x agar kompatibel dengan client
+- Authentication JWT
+- Refresh token
+- CRUD Restaurant
+- CRUD Menu Item
+- Filter + pagination
+- Elasticsearch integration
+- Swagger documentation
+- Validation DTO
+- Error handling
 
 ---
 
 ## 👨‍💻 Author
 
-**Muammar Kadafi** 🚀
-Backend Developer Candidate – HungryHub
+Muammar Kadafi 🚀  
+Backend Developer – HungryHub

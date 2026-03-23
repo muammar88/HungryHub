@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -22,6 +23,12 @@ async function bootstrap() {
 
   // RESPONSE FORMAT SUCCESS
   app.useGlobalInterceptors(new TransformInterceptor());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
 
   // RESPONSE FORMAT ERROR
   app.useGlobalFilters(new HttpExceptionFilter());

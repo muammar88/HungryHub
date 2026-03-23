@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Client } from '@elastic/elasticsearch';
 import * as dotenv from 'dotenv';
+import userSeed from './seeds/user.seed';
 import restaurantsAndMenusSeed from './seeds/restaurantsAndMenus.seed';
 
 dotenv.config();
@@ -36,6 +37,7 @@ async function main() {
       }),
   };
 
+  await userSeed(prisma);
   await restaurantsAndMenusSeed(prisma, esService);
 }
 

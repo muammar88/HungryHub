@@ -15,37 +15,37 @@ export default async function restaurantsSeed(prisma, esService) {
             name: 'Nasi Goreng Spesial',
             description: 'Nasi goreng dengan telur dan ayam',
             price: 22000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Mie Goreng Jawa',
             description: 'Mie goreng khas Jawa',
             price: 20000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Ayam Bakar',
             description: 'Ayam bakar bumbu kecap',
             price: 30000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Es Teh Manis',
             description: 'Teh manis dingin',
             price: 5000,
-            category: 'Minuman',
+            category: 'drink',
           },
           {
             name: 'Es Jeruk',
             description: 'Jeruk segar',
             price: 8000,
-            category: 'Minuman',
+            category: 'drink',
           },
           {
             name: 'Kentang Goreng',
             description: 'Kentang crispy',
             price: 15000,
-            category: 'Snack',
+            category: 'appetizer',
           },
         ],
       },
@@ -66,37 +66,37 @@ export default async function restaurantsSeed(prisma, esService) {
             name: 'Ayam Penyet',
             description: 'Ayam goreng dengan sambal',
             price: 25000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Lele Goreng',
             description: 'Lele crispy',
             price: 20000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Nasi Uduk',
             description: 'Nasi uduk gurih',
             price: 15000,
-            category: 'Makanan',
+            category: 'main',
           },
           {
             name: 'Jus Jeruk',
             description: 'Jus jeruk segar',
             price: 10000,
-            category: 'Minuman',
+            category: 'drink',
           },
           {
             name: 'Teh Hangat',
             description: 'Teh panas',
             price: 4000,
-            category: 'Minuman',
+            category: 'drink',
           },
           {
             name: 'Tahu Goreng',
             description: 'Tahu crispy',
             price: 8000,
-            category: 'Snack',
+            category: 'appetizer',
           },
         ],
       },
@@ -110,7 +110,7 @@ export default async function restaurantsSeed(prisma, esService) {
     },
   });
 
-  // delete restaurant
+  // delete restaurant index di ES
   try {
     await esService.deleteByQuery('restaurants', { query: { match_all: {} } });
   } catch (err) {

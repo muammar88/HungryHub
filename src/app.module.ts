@@ -6,10 +6,11 @@ import { MenuItemsModule } from './menu_items/menu_items.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ElasticsearchModule } from './elasticsearch/elasticsearch.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    // 🔥 WAJIB: aktifkan .env
+    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
