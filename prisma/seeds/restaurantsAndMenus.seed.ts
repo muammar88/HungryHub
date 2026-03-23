@@ -128,6 +128,7 @@ export default async function restaurantsSeed(prisma, esService) {
       phone: r.phone,
       opening_hours: r.opening_hours,
       menus: r.menuItems.map((m) => ({
+        id: m.id,
         name: m.name,
         category: m.category,
         price: Number(m.price),

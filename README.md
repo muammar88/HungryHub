@@ -4,7 +4,13 @@
 
 Repository ini berisi implementasi REST API untuk sistem **Restaurant Menu Management**, yang dikembangkan sebagai bagian dari **technical assessment Backend Software Engineer di HungryHub**.
 
-Aplikasi ini mensimulasikan sistem manajemen restoran sederhana, di mana pengguna dapat mengelola data restoran dan menu makanan yang tersedia.
+Aplikasi ini memungkinkan pengelolaan data restoran dan menu, serta mendukung **pencarian data menggunakan Elasticsearch**.
+
+---
+
+## 🔗 Repository
+
+👉 https://github.com/muammar88/HungryHub.git
 
 ---
 
@@ -12,10 +18,11 @@ Aplikasi ini mensimulasikan sistem manajemen restoran sederhana, di mana penggun
 
 Project ini dibuat untuk:
 
-- Mengimplementasikan RESTful API sesuai standar industri
-- Mendesain relasi database yang efisien dan terstruktur
-- Menerapkan validasi dan error handling yang baik
-- Menunjukkan kemampuan dalam membangun backend yang scalable dan maintainable
+- Mengimplementasikan RESTful API
+- Mendesain relasi database yang efisien
+- Mengintegrasikan **MySQL + Elasticsearch**
+- Menerapkan validasi dan error handling
+- Membangun backend yang scalable dan maintainable
 
 ---
 
@@ -24,9 +31,11 @@ Project ini dibuat untuk:
 - **Framework**: NestJS
 - **Language**: TypeScript
 - **Database**: MySQL
-- **ORM**: Prisma _(atau TypeORM, sesuaikan)_
+- **Search Engine**: Elasticsearch
+- **ORM**: Prisma
 - **Validation**: class-validator
 - **API Documentation**: Swagger
+- **Containerization**: Docker
 
 ---
 
@@ -40,14 +49,15 @@ Project ini dibuat untuk:
 - `phone` (string)
 - `opening_hours` (string)
 
+---
+
 ### 🍽️ Menu Item
 
 - `id` (number)
 - `name` (string, required)
 - `description` (string)
-- `price` (decimal, required)
-- `category` (string) _(example: appetizer, main, dessert, drink)_
-- `is_available` (boolean, default: true)
+- `price` (number, required)
+- `category` (string)
 - `restaurant_id` (relation)
 
 ---
@@ -56,24 +66,24 @@ Project ini dibuat untuk:
 
 ### 🏪 Restaurant
 
-| Method | Endpoint         | Description                                |
-| ------ | ---------------- | ------------------------------------------ |
-| POST   | /restaurants     | Create a restaurant                        |
-| GET    | /restaurants     | Get all restaurants                        |
-| GET    | /restaurants/:id | Get restaurant detail (include menu items) |
-| PUT    | /restaurants/:id | Update a restaurant                        |
-| DELETE | /restaurants/:id | Delete a restaurant                        |
+| Method | Endpoint         | Description             |
+| ------ | ---------------- | ----------------------- |
+| POST   | /restaurants     | Create restaurant       |
+| GET    | /restaurants     | Get all restaurants     |
+| GET    | /restaurants/:id | Get detail + menu items |
+| PUT    | /restaurants/:id | Update restaurant       |
+| DELETE | /restaurants/:id | Delete restaurant       |
 
 ---
 
 ### 🍽️ Menu Item
 
-| Method | Endpoint                    | Description                                   |
-| ------ | --------------------------- | --------------------------------------------- |
-| POST   | /restaurants/:id/menu_items | Create menu item                              |
-| GET    | /restaurants/:id/menu_items | Get menu items (filter by category supported) |
-| PUT    | /menu_items/:id             | Update menu item                              |
-| DELETE | /menu_items/:id             | Delete menu item                              |
+| Method | Endpoint                    | Description                      |
+| ------ | --------------------------- | -------------------------------- |
+| POST   | /restaurants/:id/menu_items | Create menu item                 |
+| GET    | /restaurants/:id/menu_items | Get menu items (filter category) |
+| PUT    | /menu_items/:id             | Update menu item                 |
+| DELETE | /menu_items/:id             | Delete menu item                 |
 
 ---
 
@@ -82,9 +92,11 @@ Project ini dibuat untuk:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/hungryhub-assessment.git
-cd hungryhub-assessment
+git clone https://github.com/muammar88/HungryHub.git
+cd HungryHub
 ```
+
+---
 
 ### 2. Install Dependencies
 
@@ -92,27 +104,60 @@ cd hungryhub-assessment
 npm install
 ```
 
+---
+
 ### 3. Setup Environment
 
 Buat file `.env`:
 
 ```env
-PORT=3000
+DATABASE_URL="mysql://root:@localhost:3306/hungryhub_db"
 
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=hungryhub_db
+ELASTIC_NODE=http://localhost:9200
+ELASTIC_USERNAME=elastic
+ELASTIC_PASSWORD=3ekiDFkbQ8ATn0E50v7Y
 ```
 
 ---
 
-### 4. Setup Database
+## 🐬 Setup MySQL
 
-Buat database MySQL, lalu jalankan migration:
+1. Pastikan MySQL sudah berjalan
+2. Buat database:
 
-Jika menggunakan Prisma:
+```sql
+CREATE DATABASE hungryhub_db;
+```
+
+---
+
+## 🔍 Setup Elasticsearch
+
+### 🔧 Menggunakan Docker (REKOMENDASI)
+
+```bash
+docker run -d \
+  --name elasticsearch \
+  -p 9200:9200 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=true" \
+  -e "ELASTIC_PASSWORD=3ekiDFkbQ8ATn0E50v7Y" \
+  docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+```
+
+---
+
+### 🔎 Test Elasticsearch
+
+```bash
+curl -u elastic:3ekiDFkbQ8ATn0E50v7Y http://localhost:9200
+```
+
+Jika berhasil, akan muncul response JSON.
+
+---
+
+## 🗄️ Database Migration
 
 ```bash
 npx prisma migrate dev
@@ -120,20 +165,20 @@ npx prisma migrate dev
 
 ---
 
-### 5. Seed Data
+## 🌱 Seed Data
 
 ```bash
 npx prisma db seed
 ```
 
-Seed berisi:
+Seed akan:
 
-- 2 restoran
-- Masing-masing 5 menu items
+- Menyimpan data ke MySQL
+- Mengirim data ke Elasticsearch
 
 ---
 
-### 6. Run Application
+## ▶️ Run Application
 
 ```bash
 npm run start:dev
@@ -152,71 +197,53 @@ http://localhost:3000
 Swagger tersedia di:
 
 ```
-http://localhost:3000/api
+http://localhost:3000/documentation
 ```
 
 ---
 
-## ✅ Features Implemented
+## 🔎 Elasticsearch Integration
+
+Contoh data yang dikirim ke Elasticsearch:
+
+```json
+{
+  "id": 1,
+  "name": "Resto Nusantara",
+  "menus": [
+    {
+      "id": 1,
+      "name": "Nasi Goreng",
+      "category": "Makanan",
+      "price": 22000
+    }
+  ]
+}
+```
+
+---
+
+## ✅ Features
 
 - CRUD Restaurant
 - CRUD Menu Item
 - Relasi Restaurant ↔ Menu Item
-- Filter menu berdasarkan category
-- Validasi input menggunakan DTO
-- Proper HTTP status codes
-- Error handling dengan response yang jelas
-- Seed data
+- Filter menu berdasarkan kategori
+- Integrasi Elasticsearch
+- Validasi DTO
+- Error handling standar
+- Seed otomatis ke DB & Elasticsearch
 
 ---
 
-## ⚠️ Error Handling
+## ⚠️ Notes
 
-API ini menggunakan standar HTTP status code:
-
-- `200` → Success
-- `201` → Created
-- `400` → Bad Request (validation error)
-- `404` → Data not found
-
-Semua error response memiliki format yang konsisten dan informatif.
-
----
-
-## 📈 Design Decisions
-
-- Menggunakan **modular architecture NestJS** untuk scalability
-- Memisahkan controller, service, dan data access layer
-- Menggunakan DTO + validation untuk menjaga integritas data
-- Relasi database menggunakan foreign key untuk menjaga konsistensi
-- Struktur dibuat sederhana namun mudah dikembangkan
-
----
-
-## 🚀 Bonus Features
-
-_(Sesuaikan kalau kamu implement)_
-
-- Pagination pada endpoint list
-- Filter menu berdasarkan category
-- Authentication (JWT / API key)
-- Docker setup
-- Unit testing
-
----
-
-## 📌 Notes
-
-Project ini difokuskan pada:
-
-- Clean code & readability
-- Struktur aplikasi yang rapi
-- Implementasi fitur yang sesuai requirement
-- Kemudahan untuk di-maintain dan dikembangkan
+- Pastikan Elasticsearch dan MySQL sudah berjalan sebelum seed
+- Gunakan Elasticsearch versi 8.x agar kompatibel dengan client
 
 ---
 
 ## 👨‍💻 Author
 
-**Muammar Kadafi**
+**Muammar Kadafi** 🚀
 Backend Developer Candidate – HungryHub

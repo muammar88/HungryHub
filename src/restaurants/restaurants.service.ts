@@ -37,6 +37,7 @@ export class RestaurantsService {
           address: restaurant.address,
           phone: restaurant.phone,
           opening_hours: restaurant.opening_hours,
+          menus: [],
         },
       });
 
@@ -184,6 +185,7 @@ export class RestaurantsService {
         id: restaurantId.toString(),
         doc: {
           menus: menus.map((m) => ({
+            id: m.id,
             name: m.name,
             category: m.category,
             price: Number(m.price),
