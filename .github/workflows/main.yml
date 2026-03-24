@@ -43,7 +43,7 @@ jobs:
             docker exec -i hungry_nest mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
 
             echo "📜 Run migration"
-            docker exec -i hungry_nest npx prisma migrate deploy
+            docker exec -i hungry_nest npx prisma migrate reset --force
 
             echo "🌱 Generate Prisma Client"
             docker exec -i hungry_nest npx prisma generate
