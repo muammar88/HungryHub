@@ -39,11 +39,11 @@ jobs:
             docker-compose down
             docker-compose up -d --force-recreate
 
-            echo "🗑 Reset database"
-            docker exec -i hungry_nest mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
+            #echo "🗑 Reset database"
+            #docker exec -i hungry_nest mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
 
-            echo "📜 Run migration"
-            docker exec -i hungry_nest npx prisma migrate reset --force
+            #echo "📜 Run migration"
+            #docker exec -i hungry_nest npx prisma migrate reset --force
 
-            echo "🌱 Generate Prisma Client"
-            docker exec -i hungry_nest npx prisma generate
+            #echo "🌱 Generate Prisma Client"
+            #docker exec -i hungry_nest npx prisma generate
