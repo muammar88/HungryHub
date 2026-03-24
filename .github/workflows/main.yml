@@ -1,0 +1,49 @@
+name: CI/CD Deploy Hungry Hub
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t muammar88/hungry-hub-app:latest .
+          docker push muammar88/hungry-hub-app:latest
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.IP_SERVER_STAGING }}
+          username: ${{ secrets.SSH_USER_STAGING }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_STAGING }}
+          script: |
+            cd /home/staging/hungryhub
+
+            echo "📥 Pull latest image"
+            docker pull muammar88/hungry-hub-app:latest
+
+            echo "♻️ Restart container"
+            docker-compose down
+            docker-compose up -d --force-recreate
+
+            echo "🗑 Reset database"
+            docker exec -i hungry_nest mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
+
+            echo "📜 Run migration"
+            docker exec -i hungry_nest npx prisma migrate deploy
+
+            echo "🌱 Generate Prisma Client"
+            docker exec -i hungry_nest npx prisma generate
