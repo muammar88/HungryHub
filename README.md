@@ -63,6 +63,7 @@ Hasil coverage tersedia di folder: coverage/
 
 ### 📁 Struktur Testing
 
+```markdown
 src/
 ├── auth/
 │ ├── auth.service.spec.ts
@@ -73,6 +74,7 @@ src/
 ├── menu_items/
 │ ├── menu_items.service.spec.ts
 │ ├── menu_items.controller.spec.ts
+```
 
 ### 🧠 Testing Strategy
 
