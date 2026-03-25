@@ -1,4 +1,11 @@
-import { Controller, Put, Param, Delete, Body } from '@nestjs/common';
+import {
+  Controller,
+  Put,
+  Param,
+  Delete,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -8,9 +15,11 @@ import {
 } from '@nestjs/swagger';
 import { MenuItemsService } from './menu_items.service';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('menu_items')
 @Controller('menu_items')
+@UseGuards(JwtAuthGuard)
 export class MenuItemsController {
   constructor(private readonly menuItemsService: MenuItemsService) {}
 

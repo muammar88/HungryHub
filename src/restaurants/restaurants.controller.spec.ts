@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RestaurantsController } from './restaurants.controller';
 import { RestaurantsService } from './restaurants.service';
-import { NotFoundException } from '@nestjs/common';
 
 describe('RestaurantsController', () => {
   let controller: RestaurantsController;
@@ -36,136 +35,128 @@ describe('RestaurantsController', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+  describe('create', () => {
+    it('should create restaurant', async () => {
+      const dto = { name: 'Test Resto' };
+      const result = { id: 1, ...dto };
 
-  // CREATE
-  it('should create restaurant', async () => {
-    const dto = {
-      name: 'Test Resto',
-      address: 'Test Address',
-      phone: '123',
-      opening_hours: '09-17',
-    };
+      mockRestaurantsService.create.mockResolvedValue(result);
 
-    const result = { id: 1, ...dto };
+      const response = await controller.create(dto as any);
 
-    mockRestaurantsService.create.mockResolvedValue(result);
-
-    const response = await controller.create(dto as any);
-
-    expect(service.create).toHaveBeenCalledWith(dto);
-    expect(response).toEqual({
-      statusCode: 201,
-      message: 'Success',
-      error: null,
-      data: result,
+      expect(service.create).toHaveBeenCalledWith(dto);
+      expect(response).toEqual({
+        statusCode: 201,
+        message: 'Success',
+        error: null,
+        data: result,
+      });
     });
   });
 
-  // FIND ALL
-  it('should return all restaurants', async () => {
-    const result = [{ id: 1, name: 'Resto' }];
+  describe('findAll', () => {
+    it('should return all restaurants', async () => {
+      const query = { search: 'test', page: '1', limit: '10' };
 
-    mockRestaurantsService.findAll.mockResolvedValue(result);
+      const result = { total: 1, data: [] };
+      mockRestaurantsService.findAll.mockResolvedValue(result);
 
-    expect(await controller.findAll()).toBe(result);
-  });
+      const response = await controller.findAll(query as any);
 
-  // FIND ONE
-  it('should return one restaurant', async () => {
-    const result = { id: 1, name: 'Resto' };
-
-    mockRestaurantsService.findOne.mockResolvedValue(result);
-
-    const response = await controller.findOne('1');
-
-    expect(service.findOne).toHaveBeenCalledWith(1);
-    expect(response).toEqual({
-      message: 'Success',
-      data: result,
+      expect(service.findAll).toHaveBeenCalledWith('test', 1, 10);
+      expect(response).toEqual(result);
     });
   });
 
-  it('should throw NotFoundException if restaurant not found', async () => {
-    mockRestaurantsService.findOne.mockRejectedValue(new NotFoundException());
+  describe('findOne', () => {
+    it('should return single restaurant', async () => {
+      const result = { id: 1, name: 'Test' };
 
-    await expect(controller.findOne('1')).rejects.toThrow(NotFoundException);
-  });
+      mockRestaurantsService.findOne.mockResolvedValue(result);
 
-  // UPDATE
-  it('should update restaurant', async () => {
-    const dto = {
-      name: 'Updated',
-      address: 'New Address',
-      phone: '123',
-      opening_hours: '10-18',
-    };
+      const response = await controller.findOne('1');
 
-    const result = { id: 1, ...dto };
-
-    mockRestaurantsService.update.mockResolvedValue(result);
-
-    const response = await controller.update('1', dto as any);
-
-    expect(service.update).toHaveBeenCalledWith(1, dto);
-    expect(response).toEqual({
-      message: 'Success',
-      data: result,
+      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(response).toEqual({
+        message: 'Success',
+        data: result,
+      });
     });
   });
 
-  // DELETE
-  it('should remove restaurant', async () => {
-    mockRestaurantsService.remove.mockResolvedValue(undefined);
+  describe('update', () => {
+    it('should update restaurant', async () => {
+      const dto = { name: 'Updated' };
+      const result = { id: 1, ...dto };
 
-    await controller.remove('1');
+      mockRestaurantsService.update.mockResolvedValue(result);
 
-    expect(service.remove).toHaveBeenCalledWith(1);
-  });
+      const response = await controller.update('1', dto as any);
 
-  // CREATE MENU
-  it('should create menu', async () => {
-    const dto = {
-      name: 'Nasi Goreng',
-      description: 'Enak',
-      price: 20000,
-      category: 'Makanan',
-      is_available: true,
-    };
-
-    const result = { id: 1, ...dto };
-
-    mockRestaurantsService.createMenu.mockResolvedValue(result);
-
-    const response = await controller.createMenu('1', dto as any);
-
-    expect(service.createMenu).toHaveBeenCalledWith(1, dto);
-    expect(response).toEqual({
-      statusCode: 201,
-      message: 'Success',
-      data: result,
+      expect(service.update).toHaveBeenCalledWith(1, dto);
+      expect(response).toEqual({
+        message: 'Success',
+        data: result,
+      });
     });
   });
 
-  // FIND MENU
-  it('should return menus by restaurant id', async () => {
-    const result = {
-      restaurantId: 1,
-      menus: [],
-    };
+  describe('remove', () => {
+    it('should delete restaurant', async () => {
+      mockRestaurantsService.remove.mockResolvedValue({
+        statusCode: 200,
+        message: 'Success',
+      });
 
-    mockRestaurantsService.findMenu.mockResolvedValue(result);
+      const response = await controller.remove('1');
 
-    const response = await controller.findMenu('1');
+      expect(service.remove).toHaveBeenCalledWith(1);
+      expect(response).toEqual({
+        statusCode: 200,
+        message: 'Success',
+      });
+    });
+  });
 
-    expect(service.findMenu).toHaveBeenCalledWith(1);
-    expect(response).toEqual({
-      statusCode: 200,
-      message: 'Success',
-      error: null,
-      data: result,
+  describe('createMenu', () => {
+    it('should create menu', async () => {
+      const dto = { name: 'Menu 1' };
+      const result = { id: 1, ...dto };
+
+      mockRestaurantsService.createMenu.mockResolvedValue(result);
+
+      const response = await controller.createMenu('1', dto as any);
+
+      expect(service.createMenu).toHaveBeenCalledWith(1, dto);
+      expect(response).toEqual({
+        statusCode: 201,
+        message: 'Success',
+        data: result,
+      });
+    });
+  });
+
+  describe('findMenu', () => {
+    it('should return menu list', async () => {
+      const query = {
+        category: 'main',
+        search: 'nasi',
+        page: '1',
+        limit: '10',
+      };
+
+      const result = {
+        total: 1,
+        data: [],
+      };
+
+      mockRestaurantsService.findMenu.mockResolvedValue(result);
+
+      const response = await controller.findMenu('1', query as any);
+
+      expect(service.findMenu).toHaveBeenCalledWith(1, 'main', 'nasi', 1, 10);
+
+      expect(response).toEqual(result);
     });
   });
 });

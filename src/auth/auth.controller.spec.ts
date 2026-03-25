@@ -6,16 +6,18 @@ describe('AuthController', () => {
   let controller: AuthController;
   let service: AuthService;
 
+  const mockAuthService = {
+    login: jest.fn(),
+    refreshToken: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         {
           provide: AuthService,
-          useValue: {
-            login: jest.fn(),
-            refreshToken: jest.fn(),
-          },
+          useValue: mockAuthService,
         },
       ],
     }).compile();
@@ -24,30 +26,54 @@ describe('AuthController', () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should call login on service', async () => {
-    const dto = { username: 'admin', password: 'password' };
-    const mockResult = { access_token: 'token', refresh_token: 'ref' };
-    (service.login as jest.Mock).mockResolvedValue(mockResult);
+  // ================= LOGIN =================
+  describe('login', () => {
+    it('should return login response', async () => {
+      const dto = {
+        username: 'admin',
+        password: 'admin',
+      };
 
-    const result = await controller.login(dto);
-    expect(service.login).toHaveBeenCalledWith(dto);
-    expect(result).toBe(mockResult);
+      const result = {
+        data: {
+          access_token: 'token',
+          refresh_token: 'refresh',
+        },
+      };
+
+      mockAuthService.login.mockResolvedValue(result);
+
+      const response = await controller.login(dto as any);
+
+      expect(service.login).toHaveBeenCalledWith(dto);
+      expect(response).toEqual(result);
+    });
   });
 
-  it('should call refreshToken on service', async () => {
-    const refreshToken = 'lama_ref';
-    const mockResult = {
-      access_token: 'baru_token',
-      refresh_token: 'baru_ref',
-    };
-    (service.refreshToken as jest.Mock).mockResolvedValue(mockResult);
+  // ================= REFRESH =================
+  describe('refresh', () => {
+    it('should return new tokens', async () => {
+      const dto = {
+        refresh_token: 'token',
+      };
 
-    const result = await controller.refresh(refreshToken);
-    expect(service.refreshToken).toHaveBeenCalledWith(refreshToken);
-    expect(result).toBe(mockResult);
+      const result = {
+        data: {
+          access_token: 'new-token',
+          refresh_token: 'new-refresh',
+        },
+      };
+
+      mockAuthService.refreshToken.mockResolvedValue(result);
+
+      const response = await controller.refresh(dto as any);
+
+      expect(service.refreshToken).toHaveBeenCalledWith(dto);
+      expect(response).toEqual(result);
+    });
   });
 });

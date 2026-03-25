@@ -43,6 +43,39 @@ https://github.com/muammar88/HungryHub.git
 
 ---
 
+## 🧪 Unit Testing
+
+Aplikasi ini menggunakan Jest untuk unit testing.
+
+Menjalankan Test
+
+npm run test
+
+Watch Mode
+
+npm run test:watch
+
+Coverage
+
+npm run test:cov
+
+Hasil coverage tersedia di folder: coverage/
+
+## Struktur Testing
+
+src/ ├── auth/ │ ├── auth.service.spec.ts │ ├── auth.controller.spec.ts
+├── restaurants/ │ ├── restaurants.service.spec.ts │ ├──
+restaurants.controller.spec.ts ├── menu_items/ │ ├──
+menu_items.service.spec.ts │ ├── menu_items.controller.spec.ts
+
+## Testing Strategy
+
+- Mock dependency (Prisma, Elasticsearch, JWT)
+- Menggunakan jest.fn()
+- Fokus pada business logic & error handling
+
+---
+
 ## 🔐 Authentication
 
 API menggunakan JWT Authentication.
