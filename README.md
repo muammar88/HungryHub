@@ -63,10 +63,16 @@ Hasil coverage tersedia di folder: coverage/
 
 ## Struktur Testing
 
-src/ ├── auth/ │ ├── auth.service.spec.ts │ ├── auth.controller.spec.ts
-├── restaurants/ │ ├── restaurants.service.spec.ts │ ├──
-restaurants.controller.spec.ts ├── menu_items/ │ ├──
-menu_items.service.spec.ts │ ├── menu_items.controller.spec.ts
+src/
+├── auth/
+│ ├── auth.service.spec.ts
+│ ├── auth.controller.spec.ts
+├── restaurants/
+│ ├── restaurants.service.spec.ts
+│ ├── restaurants.controller.spec.ts
+├── menu_items/
+│ ├── menu_items.service.spec.ts
+│ ├── menu_items.controller.spec.ts
 
 ## Testing Strategy
 
