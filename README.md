@@ -61,7 +61,7 @@ npm run test:cov
 
 Hasil coverage tersedia di folder: coverage/
 
-## Struktur Testing
+### 📁 Struktur Testing
 
 src/
 ├── auth/
@@ -74,7 +74,7 @@ src/
 │ ├── menu_items.service.spec.ts
 │ ├── menu_items.controller.spec.ts
 
-## Testing Strategy
+### 🧠 Testing Strategy
 
 - Mock dependency (Prisma, Elasticsearch, JWT)
 - Menggunakan jest.fn()
