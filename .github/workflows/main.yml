@@ -36,14 +36,14 @@ jobs:
             docker pull muammar88/hungry-hub-app:latest
 
             echo "♻️ Restart container"
-            docker-compose down
+            docker-compose down -v
             docker-compose up -d --force-recreate
 
             #echo "🗑 Reset database"
-            #docker exec -i hungry_nest mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
+            docker exec -i hungry_mysql mysql -uuser -ppassword -e "DROP DATABASE IF EXISTS hungryhub; CREATE DATABASE hungryhub;"
 
             #echo "📜 Run migration"
-            #docker exec -i hungry_nest npx prisma migrate reset --force
+            docker exec -i hungry_nest npx prisma migrate reset --force
 
             #echo "🌱 Generate Prisma Client"
-            #docker exec -i hungry_nest npx prisma generate
+            docker exec -i hungry_nest npx prisma generate
